@@ -3,6 +3,7 @@ lame = require('lame')
 request = require('request')
 events = require('events')
 fs = require('fs')
+mpg123Util = require('node-mpg123-util')
 
 # http://stackoverflow.com/a/646643
 String::startsWith ?= (s) -> @slice(0, s.length) == s
@@ -28,8 +29,9 @@ class StreamPlayer extends events.EventEmitter
     @playing = false
     @startTime = 0
     @speaker = null
+    @speakerState = null
     @decoder = null
-
+    @getVolume = 1
 
   # Play the next song in the queue if it exists
   play: () ->
@@ -38,26 +40,47 @@ class StreamPlayer extends events.EventEmitter
     else if @queue.length > 0 && !@playing
       @getStream(@queue[0], @playStream)
       @playing = true
+      @emit('paused', false)
       @queue.shift()
       @currentSong = self.trackInfo.shift()
     else if @playing
+      @emit('error', 'already_playing')
       return new Error('A song is already playing.')
     else
+      @emit('error', 'empty_queue')
       return new Error('The queue is empty.')
 
   # Pause the current playing audio stream
-  pause: () ->
-    @playing = false
+  pause: (callback) ->
+    if !@playing
+      if callback
+        return callback()
+      return
     @speaker.removeAllListeners 'close'
     @speaker.end()
+    @speaker.once 'close', () =>
+      @playing = false
+      @emit('paused', true)
+      if callback
+        return callback()
 
   # Pipe the decoded audio stream back to a speaker
   resume: () ->
+    if @playing
+      return
     @speaker = new Speaker(audioOptions)
     @decoder.pipe(@speaker)
     @playing = true
+    @emit('paused', false)
     @speaker.once 'close', () ->
       loadNextSong()
+
+  # Next song
+  next: () ->
+    @pause(=>
+      @currentSong = null
+      @play()
+    )
 
   # Remove a song with the given id metadata attribute
   remove: (id) ->
@@ -70,7 +93,17 @@ class StreamPlayer extends events.EventEmitter
   add: (url, track) ->
     @queue.push(url)
     @trackInfo.push(track)
-    @emit('song added', url, track)
+    @emit('add', url, track)
+
+  # Set volume
+  volume: (v) ->
+    if v > 1
+      v = 1
+    else if v < 0
+      v = 0
+    if self.decoder && self.decoder.mh 
+      mpg123Util.setVolume(self.decoder.mh, v)
+    @getVolume = v
 
   # Returns the metadata for the song that is currently playing
   nowPlaying: () ->
@@ -106,19 +139,18 @@ class StreamPlayer extends events.EventEmitter
     self.decoder = new lame.Decoder()
     self.speaker = new Speaker(audioOptions)
     stream.pipe(self.decoder).once 'format', () ->
+      mpg123Util.setVolume(self.decoder.mh, self.getVolume)
       self.decoder.pipe(self.speaker)
       self.startTime = Date.now();
-      self.emit('play start', self.currentSong)
+      self.emit('playing', self.currentSong)
       self.speaker.once 'close', () ->
         loadNextSong()
 
 
 # Load the next song in the queue if there is one
 loadNextSong = () ->
-  self.emit('play end', self.currentSong)
-  self.currentSong = null
-  self.playing = false
-  self.play()
+  self.emit('ended', self.currentSong)
+  self.next()
 
 
 module.exports = StreamPlayer
