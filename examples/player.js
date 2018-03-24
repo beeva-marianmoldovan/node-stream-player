@@ -19,9 +19,10 @@ player.on('ended', function (song) {
 });
 
 // Add songs url to the queue
-player.add('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', {id: 1});
-player.add('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', {id: 2});
-player.add('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', {id: 3});
+player.add('http://www.noiseaddicts.com/samples_1w72b820/272.mp3', {id: 1});
+player.add('http://www.noiseaddicts.com/samples_1w72b820/272.mp3', {id: 2});
+player.add('http://www.noiseaddicts.com/samples_1w72b820/272.mp3', {id: 3});
+player.add('http://www.noiseaddicts.com/samples_1w72b820/272.mp3', {id: 4});
 
 // Check my queue
 console.log(player.getQueue());
@@ -38,11 +39,11 @@ setTimeout(() => {
     console.log('=> Pause / play');
     console.log('-> pause');
     player.pause(() => {
-        console.log('-> realy paused');
-        setTimeout(() => {
-            console.log('-> resume');
-            player.resume();
-        }, 500);
+    //     console.log('-> realy paused');
+    //     setTimeout(() => {
+    //         console.log('-> resume');
+    //         player.resume();
+    //     }, 500);
     });
 }, wait);
 
@@ -55,8 +56,3 @@ setTimeout(() => {
     console.log('=> Next');
     player.next();
 }, 4 * wait);
-
-setTimeout(() => {
-    console.log('=> Next');
-    player.next();
-}, 6 * wait);

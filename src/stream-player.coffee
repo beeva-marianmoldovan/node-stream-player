@@ -40,10 +40,7 @@ class StreamPlayer extends events.EventEmitter
       @resume()
     else if @queue.length > 0 && !@playing
       @getStream(@queue[0], @playStream)
-      @playing = true
-      @emit('paused', false)
       @queue.shift()
-      @currentSong = self.trackInfo.shift()
     else if @playing
       @emit('error', 'already_playing')
     else
@@ -146,15 +143,22 @@ class StreamPlayer extends events.EventEmitter
     stream.pipe(self.decoder).once 'format', () ->
       mpg123Util.setVolume(self.decoder.mh, self.getVolume)
       self.decoder.pipe(self.speaker)
+
       self.startTime = Date.now();
+      self.playing = true
+      self.currentSong = self.trackInfo.shift()
+      self.emit('paused', false)
       self.emit('playing', self.currentSong)
       self.onNext = false
+
       self.speaker.once 'close', () ->
         loadNextSong()
 
 
 # Load the next song in the queue if there is one
 loadNextSong = () ->
+  self.playing = false
+  self.emit('paused', true)
   self.emit('ended', self.currentSong)
   self.next()
 
