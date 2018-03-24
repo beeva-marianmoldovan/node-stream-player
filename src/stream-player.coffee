@@ -45,10 +45,8 @@ class StreamPlayer extends events.EventEmitter
       @currentSong = self.trackInfo.shift()
     else if @playing
       @emit('error', 'already_playing')
-      return new Error('A song is already playing.')
     else
       @emit('error', 'empty_queue')
-      return new Error('The queue is empty.')
 
   # Pause the current playing audio stream
   pause: (callback) ->
@@ -77,6 +75,9 @@ class StreamPlayer extends events.EventEmitter
 
   # Next song
   next: () ->
+    if @queue.length == 0
+      @emit('error', 'empty_queue')
+      return 
     @pause(=>
       @currentSong = null
       @play()
@@ -110,7 +111,7 @@ class StreamPlayer extends events.EventEmitter
     if @playing
       return {track: @currentSong, timestamp: @startTime}
     else
-      throw new Error('No song is currently playing.')
+      return false
 
   # Returns if there is a song currently playing
   isPlaying: () ->

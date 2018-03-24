@@ -8,6 +8,12 @@ For all of your mp3 streaming needs. Queue mp3 streams and play them through you
 $ npm install stream-player
 ```
 
+## Migration 0.3.0 > 0.3.1
+### Events  
+'play start' to 'playing'  
+'play end' to 'ended'  
+'song added' to 'add'  
+
 ## Example
 ```javascript
 var StreamPlayer = require('stream-player');
@@ -80,17 +86,14 @@ Look in the examples folder for a complete case.
 
 ## Methods
 ### `add(url, metadata)`
-Adds the mp3 stream located at `url` to the queue. The optional metadata parameter can be any JS object that holds information about the song. If no metadata is given then it will be `undefined` when referenced.
+Adds the mp3 stream located at `url` to the queue. The optional metadata parameter can be any JS object that holds information about the song. If no metadata is given then it will be `undefined` when referenced.  
 Don't forget to add id key on metadata if you want to remove it later
 ### `remove(id)`
 Remove a song from the queue with this id (passed in the metadata)
 ### `play()`
 Starts playing the next song in the queue out of the speakers.
-`throws new Error('A song is already playing.')`
-`throws new Error('The queue is empty.')`
-and event 'error'.
 ### `pause(callback)`
-Pause the current playing sound. Call `play()` or `resume()` to resume.
+Pause the current playing sound. Call `play()` or `resume()` to resume.  
 The callback is fired when the song is realy paused. Speaker can take 500-1000ms to realy stop. Or wait for event 'paused'.
 ### `resume()`
 Resume the current sound.
@@ -104,7 +107,6 @@ Returns an array of song metadata in the queue.
 Returns true if a song is currently playing and false otherwise.
 ### `nowPlaying()`
 Returns an object containing the current playing song's metadata and the Unix time stamp of when the song started playing.
-`throws new Error('No song is currently playing.')`
 ###### Example
 ```javascript
 {
