@@ -32,6 +32,7 @@ class StreamPlayer extends events.EventEmitter
     @speakerState = null
     @decoder = null
     @getVolume = 1
+    @onNext = false
 
   # Play the next song in the queue if it exists
   play: () ->
@@ -75,9 +76,12 @@ class StreamPlayer extends events.EventEmitter
 
   # Next song
   next: () ->
+    if @onNext
+      return
     if @queue.length == 0
       @emit('error', 'empty_queue')
       return 
+    @onNext = true
     @pause(=>
       @currentSong = null
       @play()
@@ -144,6 +148,7 @@ class StreamPlayer extends events.EventEmitter
       self.decoder.pipe(self.speaker)
       self.startTime = Date.now();
       self.emit('playing', self.currentSong)
+      self.onNext = false
       self.speaker.once 'close', () ->
         loadNextSong()
 

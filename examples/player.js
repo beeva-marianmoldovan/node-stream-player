@@ -55,3 +55,8 @@ setTimeout(() => {
     console.log('=> Next');
     player.next();
 }, 4 * wait);
+
+setTimeout(() => {
+    console.log('=> Next');
+    player.next();
+}, 6 * wait);
